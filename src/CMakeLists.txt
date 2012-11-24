@@ -74,6 +74,7 @@ set(EC_SRC
         dissectors/ec_rip.c
         dissectors/ec_rlogin.c
         dissectors/ec_smb.c
+        dissectors/ec_kerberos.c
         dissectors/ec_smtp.c
         dissectors/ec_snmp.c
         dissectors/ec_socks.c
