@@ -52,6 +52,7 @@ set(EC_SRC
         dissectors/ec_bgp.c
         dissectors/ec_cvs.c
         dissectors/ec_dhcp.c
+        dissectors/ec_db_lsp_disc.c
         dissectors/ec_ftp.c
         dissectors/ec_http.c
         dissectors/ec_icq.c
